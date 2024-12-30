@@ -76,5 +76,50 @@ def main():
     
     updater.idle()
 
+app = FastAPI(title="Terabox Stream Bot with Gemini AI")
+
+# CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+terabox = TeraboxDownloader()
+media_handler = MediaPlayerHandler()
+gemini = GeminiHandler()
+
+class TeraboxURL(BaseModel):
+    url: HttpUrl
+    analyze: bool = False  # Option to enable Gemini analysis
+
+@app.post("/convert")
+async def convert_link(data: TeraboxURL):
+    try:
+        # Get file info from Terabox
+        file_info = await terabox.get_download_info(str(data.url))
+        if not file_info:
+            raise HTTPException(status_code=400, detail="Failed to process Terabox link")
+
+        # Check format support
+        if not media_handler.is_supported_format(file_info['mime_type']):
+            raise HTTPException(status_code=400, detail="Unsupported file format")
+
+        # Get streaming URLs
+        stream_urls = media_handler.format_stream_urls(file_info)
+
+        # If analysis is requested, use Gemini
+        if data.analyze:
+            analysis = await gemini.analyze_content(file_info)
+            if analysis:
+                stream_urls["content_analysis"] = analysis
+
+        return stream_urls
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+        
 if __name__ == '__main__':
     main()
