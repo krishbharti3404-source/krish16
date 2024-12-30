@@ -1,3 +1,4 @@
+#if need
 fastapi==0.104.1
 uvicorn==0.24.0
 aiohttp==3.9.1
@@ -5,3 +6,15 @@ python-dotenv==1.0.0
 pydantic==2.5.2
 pydantic-settings==2.1.0
 python-multipart==0.0.6
+
+
+
+# (c)TechRewindEditz
+python-telegram-bot==13.7
+requests==2.31.0
+python-dotenv==1.0.0
+flask==2.3.3
+cryptography==41.0.4
+aiohttp==3.8.5
+python-magic==0.4.27
+beautifulsoup4==4.12.2
