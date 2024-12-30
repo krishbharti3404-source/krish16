@@ -1,38 +1,80 @@
 # app/main.py
 
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import JSONResponse
-import uvicorn
-from .utils.terabox import TeraboxConverter
-from .utils.media_player import MediaPlayerHandler
-from .config import Settings
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from app.config import Config
+from app.utils.terabox import TeraboxDownloader
+from app.utils.media_player import MediaPlayerHandler
+import logging
 
-app = FastAPI(title="Terabox Converter API")
-settings = Settings()
-converter = TeraboxConverter()
-media_handler = MediaPlayerHandler()
+# Enable logging
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
+logger = logging.getLogger(__name__)
 
-@app.get("/")
-async def root():
-    return {"status": "active", "message": "Terabox Converter API is running"}
+def start(update, context):
+    update.message.reply_text(
+        'Welcome to Terabox Link Converter Bot!\n'
+        'Send me a Terabox link to convert it for streaming.'
+    )
 
-@app.get("/convert")
-async def convert_link(url: str):
+def handle_link(update, context):
     try:
-        download_info = await converter.process_terabox_link(url)
-        if not download_info:
-            raise HTTPException(status_code=400, message="Failed to process Terabox link")
-        return JSONResponse(content=download_info)
+        url = update.message.text
+        message = update.message.reply_text("Processing your link...")
+        
+        # Convert Terabox link
+        downloader = TeraboxDownloader()
+        result = downloader.get_direct_link(url)
+        
+        # Generate player links
+        player_handler = MediaPlayerHandler()
+        mx_link = player_handler.get_player_url(result['url'], 'mxplayer', result['filename'])
+        vlc_link = player_handler.get_player_url(result['url'], 'vlc', result['filename'])
+        playit_link = player_handler.get_player_url(result['url'], 'playit', result['filename'])
+        
+        response = (
+            f"✅ Link Converted Successfully!\n\n"
+            f"📁 File: {result['filename']}\n"
+            f"📦 Size: {result['size']}\n\n"
+            f"🎬 Streaming Links:\n"
+            f"▫️ MX Player: {mx_link}\n"
+            f"▫️ VLC Player: {vlc_link}\n"
+            f"▫️ Playit: {playit_link}\n\n"
+            f"🔄 Direct Link: {result['url']}"
+        )
+        
+        message.edit_text(response, disable_web_page_preview=True)
+        
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        update.message.reply_text(f"Error: {str(e)}")
 
-@app.get("/stream")
-async def stream_media(file_url: str, player: str):
-    try:
-        stream_url = await media_handler.prepare_stream(file_url, player)
-        return {"stream_url": stream_url}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+def main():
+    updater = Updater(Config.BOT_TOKEN, use_context=True)
+    dp = updater.dispatcher
 
-if __name__ == "__main__":
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+    # Command handlers
+    dp.add_handler(CommandHandler("start", start))
+    
+    # Message handlers
+    dp.add_handler(MessageHandler(
+        Filters.text & ~Filters.command,
+        handle_link
+    ))
+
+    # Start the Bot
+    if Config.WEBHOOK_URL:
+        updater.start_webhook(
+            listen="0.0.0.0",
+            port=Config.PORT,
+            url_path=Config.BOT_TOKEN,
+            webhook_url=f"{Config.WEBHOOK_URL}/{Config.BOT_TOKEN}"
+        )
+    else:
+        updater.start_polling()
+    
+    updater.idle()
+
+if __name__ == '__main__':
+    main()
