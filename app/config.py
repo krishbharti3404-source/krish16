@@ -26,6 +26,12 @@ class Config:
     CHANNEL_URL = f"https://t.me/{CHANNEL_USERNAME}"
     ADMIN_IDS = [int(id_) for id_ in os.getenv('ADMIN_IDS', '').split(',') if id_]
     OWNER_ID = int(os.getenv('OWNER_ID', 0))  # Owner's Telegram ID
+
+    # Gemini Configuration
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if not GEMINI_API_KEY:
+    raise ValueError("GEMINI_API_KEY not found in environment variables")
+
     
     # Database Configuration (if needed)
     DATABASE_URL = os.getenv('DATABASE_URL', '')
