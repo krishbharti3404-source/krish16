@@ -1,0 +1,122 @@
+{
+  "name": "TNC-Terabox-Converter-Bot",
+  "description": "A Telegram Bot that converts Terabox links to direct streamable URLs for MX Player, VLC, and Playit.",
+  "logo": "https://telegra.ph/file/8df3db5a53e7b2b41d1b7.png",
+  "keywords": ["python", "telegram-bot", "terabox", "stream", "converter", "TechRewindEditz"],
+  
+  "repository": "https://github.com/krishbharti3404-source/krish16",
+  
+  "env": {
+    "BOT_USERNAME": {
+      "description": "Your bot's username (without @)",
+      "required": true
+    },
+    "BOT_TOKEN": {
+      "description": "Your Telegram Bot token from @BotFather",
+      "required": true
+    },
+    "API_ID": {
+      "description": "Telegram API ID from https://my.telegram.org",
+      "required": true
+    },
+    "API_HASH": {
+      "description": "Telegram API Hash from https://my.telegram.org",
+      "required": true
+    },
+    "CHANNEL_USERNAME": {
+      "description": "Your Telegram channel username (without @)",
+      "required": true
+    },
+    "CHANNEL_ID": {
+      "description": "Your Telegram channel ID (numeric ID)",
+      "required": true
+    },
+    "ADMIN_IDS": {
+      "description": "Comma-separated list of admin Telegram IDs",
+      "required": true
+    },
+    "OWNER_ID": {
+      "description": "Owner's Telegram user ID",
+      "required": true
+    },
+    "GEMINI_API_KEY": {
+      "description": "Your Google Gemini API key for AI features",
+      "required": true
+    },
+    "DATABASE_URL": {
+      "description": "Database URL (MongoDB or PostgreSQL URI if needed)",
+      "required": false
+    },
+    "TERABOX_COOKIE": {
+      "description": "Terabox session cookie for link conversion",
+      "required": false
+    },
+    "TERABOX_TOKEN": {
+      "description": "Terabox authentication token (if needed)",
+      "required": false
+    },
+    "TERABOX_USER_ID": {
+      "description": "Terabox user ID (optional)",
+      "required": false
+    },
+    "SECRET_KEY": {
+      "description": "Secret key for app security",
+      "generator": "secret"
+    },
+    "MAX_REQUESTS": {
+      "description": "Rate limit: number of requests per hour",
+      "value": "50"
+    },
+    "CACHE_TIMEOUT": {
+      "description": "Cache timeout in seconds (default: 3600)",
+      "value": "3600"
+    },
+    "WEBHOOK": {
+      "description": "Enable webhook (True/False)",
+      "value": "True"
+    },
+    "WEBHOOK_URL": {
+      "description": "Your app URL (Koyeb/Render/Heroku domain)",
+      "required": false
+    },
+    "PORT": {
+      "description": "Port to run the bot",
+      "value": "8080"
+    },
+    "DEBUG": {
+      "description": "Run bot in debug mode (True/False)",
+      "value": "False"
+    },
+    "MAINTENANCE_MODE": {
+      "description": "Set to True to put bot under maintenance",
+      "value": "False"
+    },
+    "WTF_CSRF_SECRET_KEY": {
+      "description": "CSRF protection key",
+      "generator": "secret"
+    }
+  },
+
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ],
+
+  "formation": {
+    "worker": {
+      "quantity": 1,
+      "size": "standard-1x"
+    }
+  },
+
+  "addons": [
+    {
+      "plan": "heroku-postgresql"
+    }
+  ],
+
+  "scripts": {
+    "postdeploy": "echo '✅ Bot deployed successfully!'"
+  }
+}
